@@ -56,7 +56,7 @@ class Product(models.Model):
 class Productimage(models.Model):
     pid = models.ForeignKey(Product, models.DO_NOTHING, db_column='pid', blank=True, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
-    pic = models.TextField()
+    pic = models.BinaryField(blank=True, null=True)
 
     class Meta:
         managed = True

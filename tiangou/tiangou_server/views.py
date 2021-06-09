@@ -1,3 +1,7 @@
+import datetime
+
+from django.core.serializers.json import DjangoJSONEncoder
+from django.forms.models import model_to_dict
 from django.db.models import QuerySet
 from django.shortcuts import render
 from django.views import generic
@@ -5,8 +9,7 @@ from django.views import generic
 # Create your views here.
 import json
 from django.http import HttpResponse
-from .models import User
-from .models import Category
+from .models import *
 from django.views.decorators.csrf import csrf_exempt
 import random
 
@@ -70,6 +73,41 @@ def register(request):
         return HttpResponse(json.dumps(dic))
 
 
+def getAllUser(request):
+    dic = {}
+    if request.method != 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+
+        try:
+            user = User.objects.all()
+            users = []
+            for u in user:
+                users.append(
+                    {
+                        'id': u.id,
+                        'name': u.name,
+                        'isAdmin': u.isAdmin
+                    }
+                )
+            dic['status'] = "Success"
+            dic['users'] = users
+            return HttpResponse(json.dumps(dic))
+
+        except Category.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Category does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
 def getAllCategory(request):
     dic = {}
 
@@ -92,7 +130,7 @@ def getAllCategory(request):
     return HttpResponse(json.dumps(dic))
 
 
-def addNewCategory(request):
+def createCategory(request):
     dic = {}
     if request.method != 'POST':
         dic['status'] = "Failed"
@@ -122,316 +160,564 @@ def addNewCategory(request):
     return HttpResponse(json.dumps(dic))
 
 
-# sample
-# {
-#     "uid": "1",
-#     "food_name": "food_sample_5",
-#     "carbohydrate": 1.,
-#     "fat": 1.,
-#     "sugar": 1.,
-#     "energy": 1.,
-#     "protein": 1.,
-#     "brand": "brand_sample_5",
-#     "categories": ["category_sample_1", "category_sample_2", "category_sample_3", "category_sample_4"]
-#     "score": 3
-# }
-@csrf_exempt
-def create(request):
+def updateCategory(request):
     dic = {}
-    if request.method == 'GET':
+    if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
         return HttpResponse(json.dumps(dic))
     try:
         post_content = json.loads(request.body)
-        creator = post_content['uid']
-        food_name = post_content['food_name']
-        nutrition_carbohydrate = post_content['carbohydrate']
-        nutrition_fat = post_content['fat']
-        nutrition_sugar = post_content['sugar']
-        nutrition_energy = post_content['energy']
-        nutrition_protein = post_content['protein']
-        brand = post_content['brand']
-        categories = post_content['categories']
-        score_id = post_content['score']
-
-        isBrand = True
-        # get brand id
+        name = post_content['name']
+        newName = post_content['newName']
         try:
-            br = Brand.objects.get(name=brand)
-        except Brand.DoesNotExist:
-            isBrand = False
-        if isBrand is False:
-            newBrand = Brand(None, brand, 0)
-            newBrand.save()
-        br = Brand.objects.get(name=brand)
-        brand_id = br.id
+            category = Category.objects.get(name=name)
+            category.name = newName
+            category.save()
 
-        # create nutrition
-        newNutrition = Nutrition(None,
-                                 nutrition_carbohydrate,
-                                 nutrition_sugar,
-                                 nutrition_protein,
-                                 nutrition_fat,
-                                 nutrition_energy)
-        newNutrition.save()
+            dic['status'] = "Success"
+            dic['message'] = "Category updated"
+            return HttpResponse(json.dumps(dic))
+        except Category.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Category does not exist"
+            return HttpResponse(json.dumps(dic))
 
-        # get nutrition id
-        nutri = Nutrition.objects.last()
-        nutrition_id = nutri.id
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
 
-        # create food
-        newFood = Food(None, food_name, nutrition_id, brand_id, score_id, creator)
-        newFood.save()
+    return HttpResponse(json.dumps(dic))
 
-        # get food
-        fo = Food.objects.last()
 
-        # create relation
-        for category in categories:
-            isCat = True
+def deleteCategory(request):
+    dic = {}
+    if request.method != 'DELETE':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        name = post_content['name']
+        try:
+            category = Category.objects.get(name=name)
+            category.delete()
+            dic['status'] = "Success"
+            dic['message'] = "Category deleted"
+            return HttpResponse(json.dumps(dic))
+        except Category.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Category does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def getAllProperty(request, category_id):
+    dic = {}
+    if request.method != 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+
+        try:
+            category = Category.objects.get(id=category_id)
+            prop = Property.objects.filter(cid=category_id)
+            properties = []
+            for p in prop:
+                properties.append(
+                    {
+                        'pid': p.id,
+                        'name': p.name
+                    }
+                )
+            dic['status'] = "Success"
+            dic['properties'] = properties
+            return HttpResponse(json.dumps(dic))
+
+        except Category.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Category does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def createProperty(request):
+    dic = {}
+    if request.method != 'POST':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        cid = post_content['category_id']
+        name = post_content['property_name']
+
+        try:
+            category = Category.objects.get(id=cid)
             try:
-                cat = Category.objects.get(name=category)
-            except Category.DoesNotExist:
-                isCat = False
-            if isCat is False:
-                newCat = Category(name=category)
-                newCat.save()
-            cat = Category.objects.get(name=category)
-            newFRC = FRC(food=fo, category=cat)
-            newFRC.save()
+                prop = Property.objects.get(name=name)
+            except Property.DoesNotExist:
+                newProp = Property(name=name, cid=category)
+                newProp.save()
+                dic['status'] = "Success"
+                dic['message'] = "Property created"
+                return HttpResponse(json.dumps(dic))
 
-        # brand product count +1
-        br.product_count = br.product_count + 1
-        br.save()
-
-        dic['status'] = "Success"
-
-    except (KeyError, json.decoder.JSONDecodeError):
-        dic['status'] = "Failed"
-        dic['message'] = "No Input"
-
-    return HttpResponse(json.dumps(dic))
-
-
-# sample
-# {
-#     "uid": "1",
-#     "food_id": "105111"
-# }
-@csrf_exempt
-def delete(request):
-    dic = {}
-    if request.method == 'GET':
-        dic['status'] = "Failed"
-        dic['message'] = "Wrong Method"
-        return HttpResponse(json.dumps(dic))
-    try:
-        post_content = json.loads(request.body)
-        uid = post_content['uid']
-        food_id = post_content['food_id']
-        food = Food.objects.get(id=food_id)
-        user = User.objects.get(uid=uid)
-
-        if user.role != 1:
             dic['status'] = "Failed"
-            dic['message'] = "No Permission"
+            dic['message'] = "Property already exist"
             return HttpResponse(json.dumps(dic))
 
-        # delete all relations
-        FRC.objects.filter(food=food).delete()
-
-        # brand product count -1
-        br = food.brand
-        br.product_count = br.product_count - 1
-        br.save()
-
-        # get nutrition id
-        nutri_id = food.nutri.id
-
-        # delete food
-        Food.objects.get(id=food_id).delete()
-
-        # delete nutrition
-        Nutrition.objects.get(id=nutri_id).delete()
-        dic['status'] = "Success"
-    except (KeyError, json.decoder.JSONDecodeError):
-        dic['status'] = "Failed"
-        dic['message'] = "No Input"
-    except Food.DoesNotExist:
-        dic['status'] = "Failed"
-        dic['message'] = "No Food"
-    except User.DoesNotExist:
-        dic['status'] = "Failed"
-        dic['message'] = "No User"
-    except FRC.DoesNotExist:
-        dic['status'] = "Failed"
-        dic['message'] = "Unknown Error"
-
-    return HttpResponse(json.dumps(dic))
-
-
-# sample
-# {
-#     "uid": 1,
-#     "food_id": 105106,
-#     "carbohydrate": 1.2,
-#     "fat": 1.2,
-#     "sugar": 1.2,
-#     "energy": 1.2,
-#     "protein": 1.2,
-#     "score": 4,
-# }
-@csrf_exempt
-def update(request):
-    dic = {}
-    if request.method == 'GET':
-        dic['status'] = "Failed"
-        dic['message'] = "Wrong Method"
-        return HttpResponse(json.dumps(dic))
-    try:
-        post_content = json.loads(request.body)
-        uid = post_content['uid']
-        food_id = post_content['food_id']
-        nutrition_carbohydrate = post_content['carbohydrate']
-        nutrition_fat = post_content['fat']
-        nutrition_sugar = post_content['sugar']
-        nutrition_energy = post_content['energy']
-        nutrition_protein = post_content['protein']
-        score_id = post_content['score']
-
-        food = Food.objects.get(id=food_id)
-        uid = int(uid)
-        user = User.objects.get(uid=uid)
-        if user.role != 1:
+        except Category.DoesNotExist:
             dic['status'] = "Failed"
-            dic['message'] = "No Permission"
+            dic['message'] = "Category does not exist"
             return HttpResponse(json.dumps(dic))
-        # update score
-        new_score = NutriScore.objects.get(id=score_id)
-        food.score = new_score
-        food.save()
-
-        # update nutrition
-        nutri = food.nutri
-        nutri.carbohydrate = nutrition_carbohydrate
-        nutri.fat = nutrition_fat
-        nutri.sugar = nutrition_sugar
-        nutri.energy_kcal = nutrition_energy
-        nutri.protein = nutrition_protein
-        nutri.save()
-        dic['status'] = "Success"
 
     except (KeyError, json.decoder.JSONDecodeError):
         dic['status'] = "Failed"
-        dic['message'] = "No Input"
-    except Food.DoesNotExist:
-        dic['status'] = "Failed"
-        dic['message'] = "No Food"
-    except FRC.DoesNotExist:
-        dic['status'] = "Failed"
-        dic['message'] = "Unknown Error"
-    return HttpResponse(json.dumps(dic))
-
-
-@csrf_exempt
-def query(request, food_start):
-    dic = {'food_id': [], 'food_name': [], 'food_brand': [], 'food_categories': [], 'food_score': []}
-    try:
-        food_list = Food.objects.all()[food_start: food_start + 60]
-        for food_li in food_list:
-            _Id = food_li.id
-
-            _Name = food_li.name
-
-            br = food_li.brand
-            _Brand = br.name
-
-            relations = FRC.objects.filter(food=_Id)
-            _Cat = []
-            for relation in relations:
-                cat = relation.category
-                _Cat.append(cat.name)
-
-            sco = food_li.score
-            _Score = sco.r
-
-            dic['food_id'].append(_Id)
-            dic['food_name'].append(_Name)
-            dic['food_brand'].append(_Brand)
-            dic['food_categories'].append(_Cat)
-            dic['food_score'].append(_Score)
-        dic['status'] = "Success"
-    except Food.DoesNotExist:
-        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
 
     return HttpResponse(json.dumps(dic))
 
 
-@csrf_exempt
-def product(request, food_id):
+def updateProperty(request):
     dic = {}
-    try:
-        food = Food.objects.get(id=food_id)
-        dic['food_id'] = food.id
-        dic['food_name'] = food.name
-        dic['food_brand'] = food.brand.name
-        dic['food_brand_id'] = food.brand.id
-        dic['food_brand_product_count'] = food.brand.product_count
-        dic['food_score'] = food.score.r
-        dic['food_score_desc'] = food.score.des
-        dic['food_nutrition_carbohydrate'] = food.nutri.carbohydrate
-        dic['food_nutrition_sugar'] = food.nutri.sugar
-        dic['food_nutrition_protein'] = food.nutri.protein
-        dic['food_nutrition_fat'] = food.nutri.fat
-        dic['food_nutrition_energy_kcal'] = food.nutri.energy_kcal
-        dic['food_creator'] = food.creator.uid
-        dic['categories_id'] = []
-        dic['categories_name'] = []
-
-        relations = FRC.objects.filter(food=food)
-        for relation in relations:
-            dic['categories_id'].append(relation.category.id)
-            dic['categories_name'].append(relation.category.name)
-        dic['status'] = "Success"
-    except (Food.DoesNotExist, FRC.DoesNotExist):
-        dic['status'] = "Failed"
-
-    return HttpResponse(json.dumps(dic))
-
-
-@csrf_exempt
-def search(request):
-    dic = {}
-    if request.method == 'GET':
+    if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
         return HttpResponse(json.dumps(dic))
     try:
         post_content = json.loads(request.body)
-        food_name = post_content["food_name"]
-        foods = Food.objects.filter(name__contains=food_name)[:5]
-        dic['food_ids'] = []
-        for food in foods:
-            dic['food_ids'].append(food.id)
-        dic['status'] = "Success"
+        pid = post_content['property_id']
+        newName = post_content['newName']
+        try:
+            prop = Property.objects.get(id=pid)
+            prop.name = newName
+            prop.save()
+
+            dic['status'] = "Success"
+            dic['message'] = "Property updated"
+            return HttpResponse(json.dumps(dic))
+        except Property.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Property does not exist"
+            return HttpResponse(json.dumps(dic))
+
     except (KeyError, json.decoder.JSONDecodeError):
         dic['status'] = "Failed"
-        dic['message'] = "No Input"
-    except (Food.DoesNotExist, FRC.DoesNotExist):
-        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
 
     return HttpResponse(json.dumps(dic))
 
 
-@csrf_exempt
-def ran(request):
+def deleteProperty(request):
     dic = {}
-    length = len(Food.objects.all())
-    num = random.randrange(0, length)
-    food = Food.objects.all()[num]
-    dic["food_id"] = food.id
-    dic["food_name"] = food.name
-    dic["status"] = "Success"
+    if request.method != 'DELETE':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        pid = post_content['property_id']
+        try:
+            prop = Property.objects.get(id=pid)
+            prop.delete()
+            dic['status'] = "Success"
+            dic['message'] = "Property deleted"
+            return HttpResponse(json.dumps(dic))
+        except Property.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Property does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def getAllProduct(request):
+    dic = {}
+    if request.method != 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+
+        product = Product.objects.all()
+        products = []
+        for p in product:
+            products.append(
+                {
+                    'id': p.id,
+                    'name': p.name,
+                    'subtitle': p.subtitle,
+                    'original_price': p.originalprice,
+                    'promote_price': p.promoteprice,
+                    'stock': p.stock,
+                    'create_date': p.createdate.strftime("%Y-%m-%d %H:%M:%S"),
+                    'category_id': p.cid.id
+                }
+            )
+        dic['status'] = "Success"
+        dic['products'] = products
+        return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def getProduct(request, product_id):
+    dic = {}
+    if request.method != 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+
+        try:
+            product = Product.objects.get(id=product_id)
+            dic['status'] = "Success"
+            dic['product'] = model_to_dict(product)
+            return HttpResponse(json.dumps(dic, cls=DjangoJSONEncoder))
+
+        except Product.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Product does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def createProduct(request):
+    dic = {}
+    if request.method != 'POST':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        name = post_content['product_name']
+        subtitle = post_content['product_subtitle']
+        original_price = post_content['original_price']
+        promote_price = post_content['promote_price']
+        stock = post_content['product_stock']
+        create_date = datetime.datetime.now()
+        category_id = post_content['category_id']
+        try:
+            category = Category.objects.get(id=category_id)
+            newProduct = Product(name=name,
+                               cid=category,
+                               subtitle=subtitle,
+                               originalprice=original_price,
+                               promoteprice=promote_price,
+                               stock=stock,
+                               createdate=create_date)
+            newProduct.save()
+            thumbnailPic = Productimage(pid=newProduct,
+                                        type="thumbnail")
+            detailPic = Productimage(pid=newProduct,
+                                     type="detail")
+            thumbnailPic.save()
+            detailPic.save()
+            dic['status'] = "Success"
+            dic['message'] = "Product created"
+            return HttpResponse(json.dumps(dic))
+
+        except Category.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Category does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def updateProduct(request):
+    dic = {}
+    if request.method != 'POST':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        pid = post_content['product_id']
+        name = post_content['product_name']
+        subtitle = post_content['product_subtitle']
+        original_price = post_content['original_price']
+        promote_price = post_content['promote_price']
+        stock = post_content['product_stock']
+        create_date = datetime.datetime.now()
+        category_id = post_content['category_id']
+        try:
+            category = Category.objects.get(id=category_id)
+            product = Product.objects.get(id=pid)
+            product.name = name
+            product.subtitle = subtitle
+            product.originalprice = original_price
+            product.promoteprice = promote_price
+            product.stock = stock
+            product.createdate = create_date
+            product.cid = category
+            product.save()
+            dic['status'] = "Success"
+            dic['message'] = "Product updated"
+            return HttpResponse(json.dumps(dic))
+        except Product.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Product does not exist"
+            return HttpResponse(json.dumps(dic))
+        except Category.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Category does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def deleteProduct(request):
+    dic = {}
+    if request.method != 'DELETE':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        pid = post_content['product_id']
+        try:
+            product = Product.objects.get(id=pid)
+            try:
+                thumbnailPic = Productimage.objects.get(pid=product, type="thumbnail")
+                detailPic = Productimage.objects.get(pid=product, type="detail")
+                thumbnailPic.delete()
+                detailPic.delete()
+            finally:
+                product.delete()
+                dic['status'] = "Success"
+                dic['message'] = "Product deleted"
+                return HttpResponse(json.dumps(dic))
+        except Product.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Product does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def updateProductImage(request):
+    dic = {}
+    if request.method != 'POST':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        pid = post_content['product_id']
+        product = Product.objects.get(id=pid)
+        thumbnailPic = Productimage.objects.get(pid=product, type="thumbnail")
+        detailPic = Productimage.objects.get(pid=product, type="detail")
+        try:
+            newThumbnail = post_content['thumbnail']
+            thumbnailPic.pic = newThumbnail.encode('utf-8')
+            thumbnailPic.save()
+        except KeyError:
+            print('No thumbnail!')
+        try:
+            newDetail = post_content['detail']
+            detailPic.pic = newDetail.encode('utf-8')
+            detailPic.save()
+        except KeyError:
+            print('No detail!')
+
+        dic['status'] = "Success"
+        dic['message'] = "No error occurred"
+        return HttpResponse(json.dumps(dic))
+
+    except Product.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Product does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def setProductPropertyValue(request):
+    dic = {}
+
+    if request.method != 'POST':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        pid = post_content['product_id']
+        ptid = post_content['property_id']
+        value = post_content['value']
+        product = Product.objects.get(id=pid)
+        property = Property.objects.get(id=ptid)
+
+        try:
+            verify_Property = Property.objects.get(id=ptid, cid=product.cid)
+        except Property.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Product does not have this property"
+            return HttpResponse(json.dumps(dic))
+
+        try:
+            product_property = Propertyvalue.objects.get(pid=product, ptid=property)
+            product_property.value = value
+            product_property.save()
+        except Propertyvalue.DoesNotExist:
+            product_property = Propertyvalue(pid=product,
+                                             ptid=property,
+                                             value=value)
+            product_property.save()
+        dic['status'] = "Success"
+        dic['message'] = "Property value set successfully"
+        return HttpResponse(json.dumps(dic))
+
+    except Product.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "Product does not exist"
+        return HttpResponse(json.dumps(dic))
+
+    except Property.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "Property does not exist"
+        return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def getAllOrder(request):
+    dic = {}
+    if request.method != 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+
+            order = Order.objects.all()
+            orders = []
+            for o in order:
+                orders.append(
+                    {
+                        'id': o.id,
+                        'code': o.ordercode,
+                        'address': o.address,
+                        'post': o.post,
+                        'receiver': o.receiver,
+                        'mobile': o.mobile,
+                        'userMessage': o.usermessage,
+                        'createDate': o.createdate,
+                        'payDate': o.paydate,
+                        'confirmDate': o.confirmdate,
+                        'status': o.status
+                    }
+                )
+            dic['status'] = "Success"
+            dic['orders'] = orders
+            return HttpResponse(json.dumps(dic, cls=DjangoJSONEncoder))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def getOrder(request, order_id):
+    dic = {}
+    if request.method != 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        try:
+            order = Order.objects.get(id=order_id)
+            dic['status'] = "Success"
+            dic['order'] = model_to_dict(order)
+            return HttpResponse(json.dumps(dic, cls=DjangoJSONEncoder))
+
+        except Order.DoesNotExist:
+            dic['status'] = "Failed"
+            dic['message'] = "Order does not exist"
+            return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def updateOrder(request):
+    dic = {}
+    if request.method != 'POST':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+
+        post_content = json.loads(request.body)
+        order_id = post_content['order_id']
+        order = Order.objects.get(id=order_id)
+        if order.status != 'Payed':
+            dic['status'] = "Failed"
+            dic['message'] = "Invalid order status"
+            return HttpResponse(json.dumps(dic))
+        else:
+            order.deliverydate = datetime.datetime.now()
+            order.status = 'Shipped'
+            order.save()
+            dic['status'] = "Success"
+            dic['message'] = "Order delivered"
+            return HttpResponse(json.dumps(dic))
+
+    except Order.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "Order does not exist"
+        return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
 
     return HttpResponse(json.dumps(dic))
