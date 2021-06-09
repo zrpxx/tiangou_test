@@ -6,6 +6,7 @@ from django.views import generic
 import json
 from django.http import HttpResponse
 from .models import User
+from .models import Category
 from django.views.decorators.csrf import csrf_exempt
 import random
 
@@ -67,6 +68,58 @@ def register(request):
         dic['status'] = "Failed"
         dic['message'] = "User exist"
         return HttpResponse(json.dumps(dic))
+
+
+def getAllCategory(request):
+    dic = {}
+
+    if request.method != 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+
+    try:
+        category = Category.objects.all()
+        cat = []
+        for x in category:
+            cat.append(x.name)
+        dic['categories'] = cat
+        return HttpResponse(json.dumps(dic))
+
+    except (Category.DoesNotExist):
+        dic['status'] = "Failed"
+
+    return HttpResponse(json.dumps(dic))
+
+
+def addNewCategory(request):
+    dic = {}
+    if request.method != 'POST':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        name = post_content['name']
+
+        try:
+            category = Category.objects.get(name=name)
+        except Category.DoesNotExist:
+            newCategory = Category(name=name)
+            newCategory.save()
+            dic['status'] = "Success"
+            dic['message'] = "Category created"
+            return HttpResponse(json.dumps(dic))
+
+        dic['status'] = "Failed"
+        dic['message'] = "Category already exist"
+        return HttpResponse(json.dumps(dic))
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "Invalid input"
+
+    return HttpResponse(json.dumps(dic))
 
 
 # sample
