@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +43,7 @@ INSTALLED_APPS = [
 CORS_ORIGIN_WHITELIST = (
     'http://127.0.0.1:8080',
     'https://hoppscotch.io',
+    'http://localhost:8080'
 )
 CORS_ALLOW_CREDENTIALS = True
 
@@ -135,3 +135,5 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800

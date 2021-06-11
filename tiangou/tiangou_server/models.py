@@ -56,7 +56,7 @@ class Product(models.Model):
 class Productimage(models.Model):
     pid = models.ForeignKey(Product, models.DO_NOTHING, db_column='pid', blank=True, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
-    pic = models.BinaryField(blank=True, null=True)
+    pic = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = True
@@ -80,17 +80,6 @@ class Propertyvalue(models.Model):
     class Meta:
         managed = True
         db_table = 'propertyvalue'
-
-
-class Review(models.Model):
-    content = models.CharField(max_length=4000, blank=True, null=True)
-    uid = models.ForeignKey('User', models.DO_NOTHING, db_column='uid', blank=True, null=True)
-    pid = models.ForeignKey(Product, models.DO_NOTHING, db_column='pid', blank=True, null=True)
-    createdate = models.DateTimeField(db_column='createDate', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = True
-        db_table = 'review'
 
 
 class User(models.Model):
