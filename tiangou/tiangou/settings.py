@@ -9,12 +9,12 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -45,7 +45,12 @@ CORS_ORIGIN_WHITELIST = (
     'https://hoppscotch.io',
     'http://localhost:8080'
 )
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'token',
+]
 CORS_ALLOW_CREDENTIALS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = False
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -62,7 +67,7 @@ ROOT_URLCONF = 'tiangou.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['frontend/dist/spa'],  # 修改内容
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,8 +80,13 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'tiangou.wsgi.application'
+STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/dist/spa')  # 添加内容
+]
+
+WSGI_APPLICATION = 'tiangou.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -87,11 +97,23 @@ DATABASES = {
         'NAME': 'tiangou',
         'PASSWORD': '3Xf2ymjDHWBXjihP',
         'USER': 'tiangou',
-        'HOST': 'zrp.cool', # HOST
-        'POST': 3306, # 端口
+        'HOST': 'zrp.cool',  # HOST
+        'POST': 3306,  # 端口
     }
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://:1Qazxdr5@zrp.cool:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": "1Qazxdr5",
+            "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
+            "IGNORE_EXCEPTIONS": True,
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -111,7 +133,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -125,11 +146,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-
-STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

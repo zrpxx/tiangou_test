@@ -3,6 +3,7 @@ import uuid
 
 import django.db.utils
 from django.core.serializers.json import DjangoJSONEncoder
+from django_redis import get_redis_connection
 from django.db import transaction
 from django.forms.models import model_to_dict
 from django.db.models import QuerySet
@@ -15,6 +16,22 @@ from django.http import HttpResponse
 from .models import *
 from django.views.decorators.csrf import csrf_exempt
 import random
+
+r = get_redis_connection()
+
+
+def checkRequestToken(request):
+    token = request.META.get("HTTP_TOKEN")
+    if token is None or token == '':
+        return False
+    try:
+        value = r.get(token)
+        if value is None:
+            return False
+        else:
+            return value
+    except Exception:
+        return False
 
 
 @csrf_exempt
@@ -48,12 +65,16 @@ def login(request):
         dic['user_isAdmin'] = user.isAdmin
         dic['order_count'] = len(Order.objects.filter(uid=user))
         dic['shopping_cart_count'] = len(Orderitem.objects.filter(uid=user, oid=None))
+        token = str(uuid.uuid4())
+        r.set(token, 'admin' if user.isAdmin else 'user', 86400)
+        dic['token'] = token
         return HttpResponse(json.dumps(dic))
 
 
 @csrf_exempt
 def register(request):
     dic = {}
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -80,21 +101,27 @@ def register(request):
 
 def getUserInfo(request, user_id):
     dic = {}
+
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
         return HttpResponse(json.dumps(dic))
     try:
-            user = User.objects.get(id=user_id)
-            dic['status'] = "Success"
-            dic['order_count'] = len(Order.objects.filter(uid=user))
-            dic['shopping_cart_count'] = len(Orderitem.objects.filter(uid=user, oid=None))
-            return HttpResponse(json.dumps(dic))
+        user = User.objects.get(id=user_id)
+        dic['status'] = "Success"
+        dic['order_count'] = len(Order.objects.filter(uid=user))
+        dic['shopping_cart_count'] = len(Orderitem.objects.filter(uid=user, oid=None))
+        return HttpResponse(json.dumps(dic))
 
     except User.DoesNotExist:
-            dic['status'] = "Failed"
-            dic['message'] = "User does not exist"
-            return HttpResponse(json.dumps(dic))
+        dic['status'] = "Failed"
+        dic['message'] = "User does not exist"
+        return HttpResponse(json.dumps(dic))
 
 
 def getAllCategory(request):
@@ -124,6 +151,13 @@ def getAllCategory(request):
 
 def createCategory(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -154,6 +188,13 @@ def createCategory(request):
 
 def updateCategory(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -184,6 +225,13 @@ def updateCategory(request):
 
 def deleteCategory(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'DELETE':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -215,6 +263,12 @@ def deleteCategory(request):
 
 def getAllProperty(request, category_id):
     dic = {}
+
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -249,7 +303,15 @@ def getAllProperty(request, category_id):
 
 
 def createProperty(request):
+
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -288,6 +350,13 @@ def createProperty(request):
 
 def updateProperty(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -318,6 +387,13 @@ def updateProperty(request):
 
 def deleteProperty(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'DELETE':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -345,6 +421,7 @@ def deleteProperty(request):
 
 def getAllProduct(request):
     dic = {}
+
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -427,6 +504,7 @@ def getProduct(request, product_id):
 
 def getPropertiesOfProduct(request, product_id):
     dic = {}
+
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -467,6 +545,13 @@ def getPropertiesOfProduct(request, product_id):
 
 def createProduct(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -516,6 +601,13 @@ def createProduct(request):
 
 def updateProduct(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -559,6 +651,13 @@ def updateProduct(request):
 
 def deleteProduct(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'DELETE':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -592,6 +691,13 @@ def deleteProduct(request):
 
 def updateProductImage(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -633,6 +739,12 @@ def updateProductImage(request):
 
 def setProductPropertyValue(request):
     dic = {}
+
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
 
     if request.method != 'POST':
         dic['status'] = "Failed"
@@ -686,6 +798,12 @@ def setProductPropertyValue(request):
 @transaction.atomic
 def createOrder(request):
     dic = {}
+
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -760,6 +878,12 @@ def createOrder(request):
 
 def getAllOrder(request):
     dic = {}
+
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -798,6 +922,12 @@ def getAllOrder(request):
 
 def getOrder(request, order_id):
     dic = {}
+    
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+    
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -831,6 +961,12 @@ def getOrder(request, order_id):
 
 def getUserOrder(request, user_id):
     dic = {}
+    
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+    
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -880,6 +1016,12 @@ def getUserOrder(request, user_id):
 
 def payOrder(request):
     dic = {}
+    
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+    
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -915,6 +1057,12 @@ def payOrder(request):
 
 def deliverOrder(request):
     dic = {}
+    
+    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+    
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -950,6 +1098,12 @@ def deliverOrder(request):
 
 def confirmOrder(request):
     dic = {}
+    
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+    
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -985,6 +1139,12 @@ def confirmOrder(request):
 
 def randomProduct(request):
     dic = {}
+    
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+    
     if request.method != 'GET':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -1012,6 +1172,12 @@ def randomProduct(request):
 
 def createCartProduct(request):
     dic = {}
+    
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
+    
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -1059,6 +1225,10 @@ def createCartProduct(request):
 
 def deleteCartProduct(request):
     dic = {}
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
     if request.method != 'DELETE':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
@@ -1100,6 +1270,10 @@ def deleteCartProduct(request):
 
 def getAllCartProduct(request):
     dic = {}
+    if not checkRequestToken(request):
+        dic['status'] = "Failed"
+        dic['message'] = "Unauthorized"
+        return HttpResponse(json.dumps(dic))
     if request.method != 'POST':
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
