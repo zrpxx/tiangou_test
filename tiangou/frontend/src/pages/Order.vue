@@ -169,7 +169,7 @@ export default {
   created() {
     this.loading = true
     let _this = this
-    this.$axios.get('http://127.0.0.1:8000/api/order/get/' + this.$store.state.userid).then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/order/get/' + this.$store.state.userid).then(function (response) {
       let res = response.data
       console.log(res)
       _this.orders = res.orders
@@ -180,7 +180,7 @@ export default {
   methods: {
     onPay() {
       let _this = this
-      this.$axios.post('http://127.0.0.1:8000/api/order/pay', {
+      this.$axios.post('http://tiangou.zrp.cool/api/order/pay', {
         order_id: this.payID
       }).then(function (response) {
         console.log(response)
@@ -211,7 +211,7 @@ export default {
     },
     onConfirm() {
       let _this = this
-      this.$axios.post('http://127.0.0.1:8000/api/order/confirm', {
+      this.$axios.post('http://tiangou.zrp.cool/api/order/confirm', {
         confirm_id: this.confirmID
       }).then(function (response) {
         console.log(response)
