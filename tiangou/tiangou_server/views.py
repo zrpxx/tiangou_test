@@ -29,6 +29,7 @@ def checkRequestToken(request):
         if value is None:
             return False
         else:
+            print(str(value))
             return str(value)
     except Exception:
         return False
@@ -152,7 +153,7 @@ def getAllCategory(request):
 def createCategory(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -189,7 +190,7 @@ def createCategory(request):
 def updateCategory(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -226,8 +227,7 @@ def updateCategory(request):
 def deleteCategory(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
-
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
         return HttpResponse(json.dumps(dic))
@@ -306,7 +306,7 @@ def createProperty(request):
 
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -351,7 +351,7 @@ def createProperty(request):
 def updateProperty(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -388,7 +388,7 @@ def updateProperty(request):
 def deleteProperty(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -546,7 +546,7 @@ def getPropertiesOfProduct(request, product_id):
 def createProduct(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -602,7 +602,7 @@ def createProduct(request):
 def updateProduct(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -652,7 +652,7 @@ def updateProduct(request):
 def deleteProduct(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -692,7 +692,7 @@ def deleteProduct(request):
 def updateProductImage(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -740,7 +740,7 @@ def updateProductImage(request):
 def setProductPropertyValue(request):
     dic = {}
 
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
 
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
@@ -1058,7 +1058,7 @@ def payOrder(request):
 def deliverOrder(request):
     dic = {}
     
-    if not checkRequestToken(request) or checkRequestToken(request) != 'admin':
+    if not checkRequestToken(request) and checkRequestToken(request) != b'admin':
         dic['status'] = "Failed"
         dic['message'] = "Unauthorized"
         return HttpResponse(json.dumps(dic))
