@@ -242,7 +242,7 @@ export default {
     },
     onClickInfo(props) {
       let _this = this
-      this.$axios.get('http://127.0.0.1:8000/api/order/' + props.row.id).then(function (response) {
+      this.$axios.get('http://tiangou.zrp.cool/api/order/' + props.row.id).then(function (response) {
         console.log(response)
         let res = response.data
         if(res.status === 'Success') {

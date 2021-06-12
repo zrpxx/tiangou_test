@@ -27,7 +27,7 @@ export default {
     if(this.$route.params.product_id !== undefined)
       this.product_id = this.$route.params.product_id
     let _this = this
-    this.$axios.get('http://127.0.0.1:8000/api/product/' + this.product_id).then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/product/' + this.product_id).then(function (response) {
       let res = response.data
       if(res.status === 'Success') {
         _this.product = res.product
@@ -48,7 +48,7 @@ export default {
         message: 'Internal error.'
       })
     })
-    this.$axios.get('http://127.0.0.1:8000/api/product_property/' + this.product_id).then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/product_property/' + this.product_id).then(function (response) {
       let res = response.data
       if(res.status === 'Success') {
         _this.property = res.property

@@ -131,7 +131,7 @@ export default {
   created() {
     this.loading = true
     let _this = this
-    this.$axios.get('http://127.0.0.1:8000/api/categories').then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/categories').then(function (response) {
       let res = response.data
       console.log(res)
       for(let i = 0; i < res.categories.length; i++) {
@@ -150,7 +150,7 @@ export default {
   methods: {
     onSubmitAdd() {
       let _this = this
-      this.$axios.post('http://127.0.0.1:8000/api/category/create', {
+      this.$axios.post('http://tiangou.zrp.cool/api/category/create', {
         name: _this.newName
       }).then(function (response) {
         console.log(response)
@@ -177,7 +177,7 @@ export default {
     },
     onSubmitEdit() {
       let _this = this
-      this.$axios.post('http://127.0.0.1:8000/api/category/update', {
+      this.$axios.post('http://tiangou.zrp.cool/api/category/update', {
         id: _this.id,
         newName: _this.newName
       }).then(function (response) {
@@ -209,7 +209,7 @@ export default {
     },
     onDelete() {
       let _this = this
-      this.$axios.delete('http://127.0.0.1:8000/api/category/delete', {
+      this.$axios.delete('http://tiangou.zrp.cool/api/category/delete', {
         data:{
           id: this.deleteID
         }

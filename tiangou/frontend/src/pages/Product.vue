@@ -167,7 +167,7 @@ export default {
   created() {
     this.loading = true
     let _this = this
-    this.$axios.get('http://127.0.0.1:8000/api/categories').then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/categories').then(function (response) {
       let res = response.data
       console.log(res)
       _this.categoryMap = new Map()
@@ -182,7 +182,7 @@ export default {
       _this.filter.visibleCategories = _this.categories
       _this.$forceUpdate()
     })
-    this.$axios.get('http://127.0.0.1:8000/api/products').then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/products').then(function (response) {
       let res = response.data
       console.log(res)
       _this.products = res.products

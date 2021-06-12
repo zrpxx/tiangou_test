@@ -209,7 +209,7 @@ export default {
   created() {
     this.loading = true
     let _this = this
-    this.$axios.post('http://127.0.0.1:8000/api/cart/products',{
+    this.$axios.post('http://tiangou.zrp.cool/api/cart/products',{
       uid: this.$store.state.userid
     }).then(function (response) {
       let res = response.data
@@ -235,7 +235,7 @@ export default {
     },
     onConfirmDelete() {
       let _this = this
-      this.$axios.delete('http://127.0.0.1:8000/api/cart/delete', {
+      this.$axios.delete('http://tiangou.zrp.cool/api/cart/delete', {
         data: {
           uid: this.$store.state.userid,
           pid: this.deleteID
@@ -291,7 +291,7 @@ export default {
       }
       console.log(pids)
       let _this = this
-      this.$axios.post('http://127.0.0.1:8000/api/order/create', {
+      this.$axios.post('http://tiangou.zrp.cool/api/order/create', {
         userid: this.$store.state.userid,
         items: pids,
         nums: nums,
@@ -335,7 +335,7 @@ export default {
         }
       }
       let _this = this
-      this.$axios.post('http://127.0.0.1:8000/api/order/create', {
+      this.$axios.post('http://tiangou.zrp.cool/api/order/create', {
         userid: this.$store.state.userid,
         items: pids,
         nums: nums,
@@ -351,7 +351,7 @@ export default {
         let res = response.data
         if(res.status === 'Success') {
           _this.generateID = res.order_id
-          _this.$axios.post('http://127.0.0.1:8000/api/order/pay', {
+          _this.$axios.post('http://tiangou.zrp.cool/api/order/pay', {
             order_id: _this.generateID
           }).then(function (response) {
             console.log(response)

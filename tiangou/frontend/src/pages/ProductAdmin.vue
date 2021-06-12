@@ -376,7 +376,7 @@ export default {
   created() {
     this.loading = true
     let _this = this
-    this.$axios.get('http://127.0.0.1:8000/api/categories').then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/categories').then(function (response) {
       let res = response.data
       console.log(res)
       _this.categoryMap = new Map()
@@ -390,7 +390,7 @@ export default {
       console.log(_this.categoryMap)
       _this.$forceUpdate()
     })
-    this.$axios.get('http://127.0.0.1:8000/api/products').then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/products').then(function (response) {
       let res = response.data
       console.log(res)
       _this.products = res.products
@@ -407,7 +407,7 @@ export default {
       let reader = new FileReader()
       reader.onload = function () {
         console.log(reader.result)
-        _this.$axios.post('http://127.0.0.1:8000/api/product/create', {
+        _this.$axios.post('http://tiangou.zrp.cool/api/product/create', {
           category_id: _this.categoryMap.get(_this.newCategory),
           product_name: _this.newName,
           product_subtitle: _this.newSubtitle,
@@ -444,7 +444,7 @@ export default {
     onSubmitEdit() {
       let _this = this
 
-        _this.$axios.post('http://127.0.0.1:8000/api/product/update', {
+        _this.$axios.post('http://tiangou.zrp.cool/api/product/update', {
           product_id: _this.id,
           product_name: _this.newName,
           product_subtitle: _this.newSubtitle,
@@ -480,7 +480,7 @@ export default {
     },
     onDelete() {
       let _this = this
-      this.$axios.delete('http://127.0.0.1:8000/api/product/delete', {
+      this.$axios.delete('http://tiangou.zrp.cool/api/product/delete', {
         data:{
           product_id: this.deleteID
         }
@@ -522,7 +522,7 @@ export default {
       this.newDetail = null
       this.newThumbnail = null
       let _this = this
-      this.$axios.get('http://127.0.0.1:8000/api/product/' + this.id).then(function (response) {
+      this.$axios.get('http://tiangou.zrp.cool/api/product/' + this.id).then(function (response) {
           let res = response.data
           _this.thumbnail_pic = res.thumbnail_pic
           _this.detail_pic = res.detail_pic
@@ -544,7 +544,7 @@ export default {
 
         reader.onload = function () {
           console.log(reader.result)
-          _this.$axios.post('http://127.0.0.1:8000/api/product_image/update', {
+          _this.$axios.post('http://tiangou.zrp.cool/api/product_image/update', {
             product_id: _this.id,
             detail: reader.result
           }).then(function (response) {
@@ -580,7 +580,7 @@ export default {
 
         reader.onload = function () {
           console.log(reader.result)
-          _this.$axios.post('http://127.0.0.1:8000/api/product_image/update', {
+          _this.$axios.post('http://tiangou.zrp.cool/api/product_image/update', {
             product_id: _this.id,
             thumbnail: reader.result
           }).then(function (response) {
@@ -616,7 +616,7 @@ export default {
       this.newProperty = {}
       this.properties = []
       let _this = this
-      this.$axios.get('http://127.0.0.1:8000/api/properties/' + props.row.category_id).then(function (response) {
+      this.$axios.get('http://tiangou.zrp.cool/api/properties/' + props.row.category_id).then(function (response) {
         let res = response.data
         console.log(res)
         for(let i = 0; i < res.properties.length; i++) {
@@ -631,7 +631,7 @@ export default {
       let _this = this
 
       for(let key in this.newProperty) {
-        this.$axios.post('http://127.0.0.1:8000/api/product_property/update',{
+        this.$axios.post('http://tiangou.zrp.cool/api/product_property/update',{
           product_id: _this.id,
           property_id: _this.propertyMap.get(key),
           value: _this.newProperty[key]

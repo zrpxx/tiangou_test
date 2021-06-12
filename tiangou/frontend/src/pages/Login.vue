@@ -57,7 +57,7 @@ export default {
   methods: {
     onLogin() {
       let _this = this
-      this.$axios.post('http://127.0.0.1:8000/api/login', {
+      this.$axios.post('http://tiangou.zrp.cool/api/login', {
         username: this.username,
         password: this.password
       }).then(function (response) {

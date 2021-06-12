@@ -22,7 +22,7 @@ export default {
   },
   mounted() {
     let _this = this
-    this.$axios.get('http://127.0.0.1:8000/api/user/info/' + this.$store.state.userid).then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/user/info/' + this.$store.state.userid).then(function (response) {
       let res = response.data
       if(res.status === 'Success') {
         _this.$store.commit('updateCount', {
@@ -43,7 +43,7 @@ export default {
         message: 'Internal error.'
       })
     })
-    this.$axios.get('http://127.0.0.1:8000/api/random').then(function (response) {
+    this.$axios.get('http://tiangou.zrp.cool/api/random').then(function (response) {
       let res = response.data
       if(res.status === 'Success') {
         _this.random_product_id = res.product.id
