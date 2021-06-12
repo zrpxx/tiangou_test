@@ -29,7 +29,7 @@ def checkRequestToken(request):
         if value is None:
             return False
         else:
-            return value
+            return str(value)
     except Exception:
         return False
 
