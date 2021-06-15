@@ -135,7 +135,7 @@ export default {
   created() {
     this.loading = true
     let _this = this
-    this.$axios.get('http://tiangou.zrp.cool/api/categories').then(function (response) {
+    this.$axios.get('https://tiangou.zrp.cool/api/categories').then(function (response) {
       let res = response.data
       console.log(res)
       _this.categoryMap = new Map()
@@ -156,7 +156,7 @@ export default {
     updateTable() {
       this.properties = []
       let _this = this
-      this.$axios.get('http://tiangou.zrp.cool/api/properties/' + this.categoryMap.get(this.currentCategory)).then(function (response) {
+      this.$axios.get('https://tiangou.zrp.cool/api/properties/' + this.categoryMap.get(this.currentCategory)).then(function (response) {
         let res = response.data
         console.log(res)
         _this.properties = res.properties
@@ -167,7 +167,7 @@ export default {
     },
     onSubmitAdd() {
       let _this = this
-      this.$axios.post('http://tiangou.zrp.cool/api/property/create', {
+      this.$axios.post('https://tiangou.zrp.cool/api/property/create', {
         category_id: _this.categoryMap.get(_this.currentCategory),
         property_name: _this.newName
       }).then(function (response) {
@@ -195,7 +195,7 @@ export default {
     },
     onSubmitEdit() {
       let _this = this
-      this.$axios.post('http://tiangou.zrp.cool/api/property/update', {
+      this.$axios.post('https://tiangou.zrp.cool/api/property/update', {
         property_id: _this.id,
         newName: _this.newName
       }).then(function (response) {
@@ -227,7 +227,7 @@ export default {
     },
     onDelete() {
       let _this = this
-      this.$axios.delete('http://tiangou.zrp.cool/api/property/delete', {
+      this.$axios.delete('https://tiangou.zrp.cool/api/property/delete', {
         data:{
           property_id: this.deleteID
         }

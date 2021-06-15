@@ -77,7 +77,7 @@ export default {
   methods: {
     onAddCart() {
       let _this = this
-      this.$axios.post('http://tiangou.zrp.cool/api/cart/create', {
+      this.$axios.post('https://tiangou.zrp.cool/api/cart/create', {
           uid: this.$store.state.userid,
           pid: this.product.id
       }).then(function (response) {

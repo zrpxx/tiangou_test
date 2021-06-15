@@ -152,7 +152,7 @@ export default {
   created() {
     this.loading = true
     let _this = this
-    this.$axios.get('http://tiangou.zrp.cool/api/orders').then(function (response) {
+    this.$axios.get('https://tiangou.zrp.cool/api/orders').then(function (response) {
       let res = response.data
       console.log(res)
       _this.orders = res.orders
@@ -163,7 +163,7 @@ export default {
   methods: {
     onShip() {
       let _this = this
-      this.$axios.post('http://tiangou.zrp.cool/api/order/deliver', {
+      this.$axios.post('https://tiangou.zrp.cool/api/order/deliver', {
         order_id: this.deliverID
       }).then(function (response) {
         console.log(response)
@@ -194,7 +194,7 @@ export default {
     },
     onClickInfo(props) {
       let _this = this
-      this.$axios.get('http://tiangou.zrp.cool/api/order/' + props.row.id).then(function (response) {
+      this.$axios.get('https://tiangou.zrp.cool/api/order/' + props.row.id).then(function (response) {
         console.log(response)
         let res = response.data
         if(res.status === 'Success') {

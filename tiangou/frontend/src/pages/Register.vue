@@ -58,7 +58,7 @@ export default {
       if(this.username === '' || this.password === '')
         return
       let _this = this
-      this.$axios.post('http://tiangou.zrp.cool/api/register', {
+      this.$axios.post('https://tiangou.zrp.cool/api/register', {
         username: this.username,
         password: this.password
       }).then(function (response) {
